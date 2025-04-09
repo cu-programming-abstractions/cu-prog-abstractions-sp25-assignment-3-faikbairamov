@@ -1,15 +1,15 @@
 Q1:
-
-
+file: FlagGUI.cpp
+function: drawFlag()
 
 
 Q2:
-
+6765
 
 
 
 Q3:
-
+89
 
 
 

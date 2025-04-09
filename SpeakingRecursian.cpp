@@ -1,13 +1,49 @@
+
 #include "SpeakingRecursian.h"
+#include "error.h"
 using namespace std;
 
-Vector<string> allRecursianWords(int numSyllables) {
-    /* TODO: Delete this comment and the next few lines, then implement
-     * this function.
-     */
-    (void) numSyllables;
-    return { };
+Vector<string> helper(int syllablesLeft, bool isFirst) {
+    if (syllablesLeft == 0) return {""}; // base case
+
+    Vector<string> result;
+
+    Vector<char> vowels = {'e', 'i', 'u'};
+    Vector<char> consonants = {'b', 'k', 'n', 'r', 's', '\''};
+
+    // option 1: if first syllable, try using a single vowel
+    if (isFirst) {
+        for (char v : vowels) {
+            for (string suffix : helper(syllablesLeft - 1, false)) {
+                result += string(1, v) + suffix;
+            }
+        }
+    }
+
+    // option 2: trying all consonant + vowel combinations
+    for (char c : consonants) {
+        for (char v : vowels) {
+            for (string suffix : helper(syllablesLeft - 1, false)) {
+                result += string(1, c) + string(1, v) + suffix;
+            }
+        }
+    }
+
+    return result;
 }
+
+Vector<string> allRecursianWords(int numSyllables) {
+    if (numSyllables < 0) {
+        error("Number of syllables cannot be negative.");
+    }
+
+
+
+    // Recursive helper function
+    return helper(numSyllables, true);
+}
+
+
 
 
 /* * * * * Test Cases Below This Point * * * * */
@@ -79,5 +115,29 @@ PROVIDED_TEST("allRecursianWords produces words consisting of consonants and vow
         for (char ch: word) {
             EXPECT(isConsonant(ch) || isVowel(ch));
         }
+    }
+}
+PROVIDED_TEST("All 2-syllable words start with valid first syllable") {
+    auto words = allRecursianWords(2);
+
+    for (string word : words) {
+        if (isVowel(word[0])) {
+            EXPECT(word.length() == 3); // e.g. "e" + "bi"
+            EXPECT(isConsonant(word[1]));
+            EXPECT(isVowel(word[2]));
+        } else {
+            EXPECT(isConsonant(word[0]));
+            EXPECT(isVowel(word[1]));
+            EXPECT(word.length() == 4); // e.g. "bi" + "ku"
+            EXPECT(isConsonant(word[2]));
+            EXPECT(isVowel(word[3]));
+        }
+    }
+}
+
+PROVIDED_TEST("All 3-syllable words have valid lengths (5 or 6)") {
+    auto words = allRecursianWords(3);
+    for (string word : words) {
+        EXPECT(word.length() == 5 || word.length() == 6);
     }
 }

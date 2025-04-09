@@ -1,19 +1,49 @@
 #include "MountainsOfRecursia.h"
 using namespace std;
+#include "random.h"
+
+Vector<Point> makeMountainRangeHelper(const Point& left,
+                                      const Point& right,
+                                      int amplitude,
+                                      double decayRate) {
+    Vector<Point> result;
+
+    // base case
+    if ((right.x - left.x) <= 3) {
+        result.add(left);
+        result.add(right);
+        return result;
+    }
+
+    // recursive case
+    int verticalOffset = (amplitude == 0) ? 0 : randomInteger(-amplitude, amplitude);
+    Point midpoint = {(left.x + right.x) / 2, (left.y + right.y) / 2 + verticalOffset};
+
+    int newAmplitude = (amplitude * decayRate);
+
+    Vector<Point> leftPart = makeMountainRangeHelper(left, midpoint, newAmplitude, decayRate);
+    Vector<Point> rightPart = makeMountainRangeHelper(midpoint, right, newAmplitude, decayRate);
+
+    leftPart.remove(leftPart.size() - 1);
+    for (const Point& p : rightPart) {
+        leftPart.add(p);
+    }
+
+    return leftPart;
+}
 
 Vector<Point> makeMountainRange(const Point& left,
                                 const Point& right,
                                 int amplitude,
                                 double decayRate) {
-    /* TODO: Delete this comment and the next few lines, then implement this
-     * function.
-     */
-    (void) left;
-    (void) right;
-    (void) amplitude;
-    (void) decayRate;
-    return { };
+    // checking for errors
+    if (amplitude < 0 || left.x > right.x || decayRate > 1 || decayRate < 0) {
+        error("invalid arguments");
+    }
+
+    return makeMountainRangeHelper(left, right, amplitude, decayRate);
 }
+
 
 /* * * * * Test Cases Below This Point * * * * */
 #include "GUI/SimpleTest.h"

@@ -1,11 +1,87 @@
 #include "TempleOfRecursia.h"
+#include "error.h"
 using namespace std;
 
 Vector<Rectangle> makeTemple(const Rectangle& bounds, const TempleParameters& params) {
-    /* TODO: Delete this comment and the next few lines, then implement this function. */
-    (void) bounds;
-    (void) params;
-    return { };
+    if (params.order < 0) {
+        error("Temple order cannot be negative");
+    }
+    if (params.order == 0) {
+        return {};
+    }
+
+    Vector<Rectangle> result;
+
+    int baseWidth = static_cast<int>(bounds.width * params.baseWidth);
+    int baseHeight = static_cast<int>(bounds.height * params.baseHeight);
+
+    int baseX = bounds.x + (bounds.width - baseWidth) / 2;
+    int baseY = bounds.y + bounds.height - baseHeight;
+
+    Rectangle base;
+    base.x = baseX;
+    base.y = baseY;
+    base.width = baseWidth;
+    base.height = baseHeight;
+    result.add(base);
+
+    int columnWidth = static_cast<int>(bounds.width * params.columnWidth);
+    int columnHeight = static_cast<int>(bounds.height * params.columnHeight);
+
+    int columnX = bounds.x + (bounds.width - columnWidth) / 2;
+    int columnY = baseY - columnHeight;
+
+    Rectangle column;
+    column.x = columnX;
+    column.y = columnY;
+    column.width = columnWidth;
+    column.height = columnHeight;
+    result.add(column);
+
+    if (params.order > 1) {
+        int upperTempleHeight = static_cast<int>(bounds.height * params.upperTempleHeight);
+
+        Rectangle upperBounds;
+        upperBounds.x = columnX;
+        upperBounds.y = columnY - upperTempleHeight;
+        upperBounds.width = columnWidth;
+        upperBounds.height = upperTempleHeight;
+
+        TempleParameters upperParams = params;
+        upperParams.order = params.order - 1;
+        Vector<Rectangle> upperTemple = makeTemple(upperBounds, upperParams);
+
+        result.addAll(upperTemple);
+    }
+
+    if (params.order > 1) {
+        int smallTempleWidth = static_cast<int>(bounds.width * params.smallTempleWidth);
+        int smallTempleHeight = static_cast<int>(bounds.height * params.smallTempleHeight);
+
+        int availableWidth = baseWidth;
+
+        double spacing = (availableWidth - (params.numSmallTemples * smallTempleWidth)) /
+                         (double)(params.numSmallTemples - 1);
+
+        for (int i = 0; i < params.numSmallTemples; i++) {
+            int smallX = baseX + static_cast<int>(i * (smallTempleWidth + spacing));
+            int smallY = baseY - smallTempleHeight;  // Place on top of the base
+
+            Rectangle smallBounds;
+            smallBounds.x = smallX;
+            smallBounds.y = smallY;
+            smallBounds.width = smallTempleWidth;
+            smallBounds.height = smallTempleHeight;
+
+            TempleParameters smallParams = params;
+            smallParams.order = params.order - 1;
+            Vector<Rectangle> smallTemple = makeTemple(smallBounds, smallParams);
+
+            result.addAll(smallTemple);
+        }
+    }
+
+    return result;
 }
 
 
